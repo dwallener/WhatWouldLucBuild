@@ -2,8 +2,8 @@
 export async function autofillTask(prompt: string): Promise<string> {
   const endpoint = import.meta.env.VITE_AZURE_OPENAI_ENDPOINT;
   const deployment = import.meta.env.VITE_AZURE_DEPLOYMENT_NAME;
-  const apiKey = import.meta.env.VITE_AZURE_OPENAI_KEY;
-  const apiVersion = import.meta.env.VITE_OPENAI_API_VERSION;
+  const apiKey = import.meta.env.VITE_AZURE_OPENAI_API_KEY;
+  const apiVersion = import.meta.env.VITE_AZURE_OPENAI_API_VERSION;
 
   const url = `${endpoint}/openai/deployments/${deployment}/chat/completions?api-version=${apiVersion}`;
 
