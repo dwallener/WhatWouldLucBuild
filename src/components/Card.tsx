@@ -1,3 +1,4 @@
+// src/components/Card.tsx
 import React, { useEffect, useRef, useState } from "react";
 import { Draggable } from "@hello-pangea/dnd";
 import { autofillTask } from "../lib/llmClient";
@@ -25,13 +26,17 @@ export default function Card({
     }
   }, [shouldEdit]);
 
-async function handleAutofill() {
-  console.log("🧠 Autofill button clicked"); // <-- Add this line
-  const suggestion = await autofillTask("Suggest a task for this project.");
-  console.log("🧠 GPT returned:", suggestion); // <-- And this
-  setDraft(suggestion);
-  onEditEnd(suggestion);
-}
+  useEffect(() => {
+    console.log("🔄 Card mounted:", card.title, "shouldEdit:", shouldEdit);
+  }, []);
+
+  async function handleAutofill() {
+    console.log("🧠 Autofill button clicked");
+    const suggestion = await autofillTask(`The user entered this text: "${draft}". Suggest three short, clear bullet points for this project. Keep each point concise.`);
+    console.log("🧠 GPT returned:", suggestion);
+    setDraft(suggestion);
+    onEditEnd(suggestion);
+  }
 
   function handleBlur() {
     if (draft.trim()) {
@@ -39,6 +44,7 @@ async function handleAutofill() {
     } else {
       onEditEnd("Untitled Task");
     }
+    setEditingCardId(null);
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -76,7 +82,20 @@ async function handleAutofill() {
               </button>
             </>
           ) : (
-            <p className="text-sm">{card.title}</p>
+            <>
+              <p className="text-sm">{card.title}</p>
+              <button
+                onClick={() => {
+                  setEditingCardId(card.id);
+                  setTimeout(() => {
+                    handleAutofill();
+                  }, 0);
+                }}
+                className="text-xs text-blue-500 underline self-start"
+              >
+                Autofill
+              </button>
+            </>
           )}
         </div>
       )}

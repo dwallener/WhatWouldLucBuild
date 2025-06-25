@@ -1,6 +1,8 @@
+// src/components/Board.tsx
 import React, { useState } from "react";
 import Column from "./Column";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
+import { v4 as uuidv4 } from "uuid";
 
 const initialData = {
   columns: {
@@ -11,14 +13,8 @@ const initialData = {
         { id: "2", title: "Setup project" },
       ],
     },
-    inprogress: {
-      title: "In Progress",
-      cards: [],
-    },
-    done: {
-      title: "Done",
-      cards: [],
-    },
+    inprogress: { title: "In Progress", cards: [] },
+    done: { title: "Done", cards: [] },
   },
 };
 
@@ -45,43 +41,30 @@ export default function Board() {
   }
 
   function handleAddCard(columnId: string) {
-    const newCard = {
-      id: Date.now().toString(),
-      title: "",
-    };
+    const newCard = { id: uuidv4(), title: "" };
+    const updatedCards = [...data.columns[columnId].cards, newCard];
 
-    setData((prevData) => {
-      const updatedColumn = {
-        ...prevData.columns[columnId],
-        cards: [...prevData.columns[columnId].cards, newCard],
-      };
-
-      return {
-        columns: {
-          ...prevData.columns,
-          [columnId]: updatedColumn,
+    setData({
+      columns: {
+        ...data.columns,
+        [columnId]: {
+          ...data.columns[columnId],
+          cards: updatedCards,
         },
-      };
+      },
     });
-
-    setEditingCardId(newCard.id); // Start editing immediately
+    setEditingCardId(newCard.id);
   }
 
-  function handleUpdateCard(columnId: string, cardId: string, newTitle: string) {
-    setData((prevData) => {
-      const updatedCards = prevData.columns[columnId].cards.map((card) =>
-        card.id === cardId ? { ...card, title: newTitle } : card
-      );
-      return {
-        columns: {
-          ...prevData.columns,
-          [columnId]: {
-            ...prevData.columns[columnId],
-            cards: updatedCards,
-          },
-        },
-      };
-    });
+  function handleEditEnd(cardId: string, newTitle: string) {
+    const updatedColumns = { ...data.columns };
+    for (const column of Object.values(updatedColumns)) {
+      const card = column.cards.find((c) => c.id === cardId);
+      if (card) {
+        card.title = newTitle;
+      }
+    }
+    setData({ columns: updatedColumns });
     setEditingCardId(null);
   }
 
@@ -95,9 +78,9 @@ export default function Board() {
             title={col.title}
             cards={col.cards}
             onAddCard={() => handleAddCard(key)}
-            onUpdateCard={(cardId, newTitle) => handleUpdateCard(key, cardId, newTitle)}
             editingCardId={editingCardId}
             setEditingCardId={setEditingCardId}
+            onEditEnd={(title) => handleEditEnd(editingCardId!, title)}
           />
         ))}
       </div>
