@@ -6,7 +6,10 @@ const initialData = {
   columns: {
     todo: {
       title: "Todo",
-      cards: [{ id: "1", title: "Design UI" }, { id: "2", title: "Setup project" }],
+      cards: [
+        { id: "1", title: "Design UI" },
+        { id: "2", title: "Setup project" },
+      ],
     },
     inprogress: {
       title: "In Progress",
@@ -40,11 +43,38 @@ export default function Board() {
     });
   }
 
+  function handleAddCard(columnId: string) {
+    const newCard = {
+      id: Date.now().toString(),
+      title: "New Task",
+    };
+
+    setData((prevData) => {
+      const updatedColumn = {
+        ...prevData.columns[columnId],
+        cards: [...prevData.columns[columnId].cards, newCard],
+      };
+
+      return {
+        columns: {
+          ...prevData.columns,
+          [columnId]: updatedColumn,
+        },
+      };
+    });
+  }
+
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <div className="flex gap-6 justify-center p-6">{/* 👈 Centered layout */} 
+      <div className="flex gap-6 justify-center p-6">
         {Object.entries(data.columns).map(([key, col]) => (
-          <Column key={key} id={key} title={col.title} cards={col.cards} />
+          <Column
+            key={key}
+            id={key}
+            title={col.title}
+            cards={col.cards}
+            onAddCard={() => handleAddCard(key)}
+          />
         ))}
       </div>
     </DragDropContext>
