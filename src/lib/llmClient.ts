@@ -27,3 +27,4 @@ export async function autofillTask(prompt: string): Promise<string> {
 
   return data?.choices?.[0]?.message?.content ?? "No response";
 }
+
