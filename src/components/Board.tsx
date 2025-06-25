@@ -24,6 +24,7 @@ const initialData = {
 
 export default function Board() {
   const [data, setData] = useState(initialData);
+  const [editingCardId, setEditingCardId] = useState<string | null>(null);
 
   function onDragEnd(result: DropResult) {
     const { source, destination } = result;
@@ -46,7 +47,7 @@ export default function Board() {
   function handleAddCard(columnId: string) {
     const newCard = {
       id: Date.now().toString(),
-      title: "New Task",
+      title: "",
     };
 
     setData((prevData) => {
@@ -62,6 +63,26 @@ export default function Board() {
         },
       };
     });
+
+    setEditingCardId(newCard.id); // Start editing immediately
+  }
+
+  function handleUpdateCard(columnId: string, cardId: string, newTitle: string) {
+    setData((prevData) => {
+      const updatedCards = prevData.columns[columnId].cards.map((card) =>
+        card.id === cardId ? { ...card, title: newTitle } : card
+      );
+      return {
+        columns: {
+          ...prevData.columns,
+          [columnId]: {
+            ...prevData.columns[columnId],
+            cards: updatedCards,
+          },
+        },
+      };
+    });
+    setEditingCardId(null);
   }
 
   return (
@@ -74,6 +95,9 @@ export default function Board() {
             title={col.title}
             cards={col.cards}
             onAddCard={() => handleAddCard(key)}
+            onUpdateCard={(cardId, newTitle) => handleUpdateCard(key, cardId, newTitle)}
+            editingCardId={editingCardId}
+            setEditingCardId={setEditingCardId}
           />
         ))}
       </div>
