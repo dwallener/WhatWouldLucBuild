@@ -1,0 +1,31 @@
+// prisma/schema.prisma
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Board {
+  id      String   @id @default(uuid())
+  name    String
+  columns Column[]
+}
+
+model Column {
+  id      String   @id @default(uuid())
+  title   String
+  cards   Card[]
+  board   Board    @relation(fields: [boardId], references: [id])
+  boardId String
+}
+
+model Card {
+  id        String   @id @default(uuid())
+  title     String
+  column    Column   @relation(fields: [columnId], references: [id])
+  columnId  String
+}
