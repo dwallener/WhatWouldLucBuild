@@ -41,7 +41,7 @@ export default function Board() {
   }
 
   function handleAddCard(columnId: string) {
-    const newCard = { id: uuidv4(), title: "" };
+    const newCard = { id: uuidv4(), title: "DummyTitle" };
     const updatedCards = [...data.columns[columnId].cards, newCard];
 
     setData({
@@ -56,17 +56,33 @@ export default function Board() {
     setEditingCardId(newCard.id);
   }
 
-  function handleEditEnd(cardId: string, newTitle: string) {
-    const updatedColumns = { ...data.columns };
-    for (const column of Object.values(updatedColumns)) {
-      const card = column.cards.find((c) => c.id === cardId);
-      if (card) {
-        card.title = newTitle;
-      }
+function handleEditEnd(cardId: string, newTitle: string) {
+  const updatedColumns = { ...data.columns };
+
+  for (const columnId in updatedColumns) {
+    const cards = updatedColumns[columnId].cards;
+    const cardIndex = cards.findIndex((c) => c.id === cardId);
+    if (cardIndex !== -1) {
+      console.log("📋 Before update:");
+      cards.forEach((card) =>
+        console.log(`- ${card.id}: ${card.title}`)
+      );
+
+      console.log(`🔁 Updating card ${cardId} to: "${newTitle}"`);
+      cards[cardIndex] = { ...cards[cardIndex], title: newTitle };
+
+      console.log("✅ After update:");
+      cards.forEach((card) =>
+        console.log(`- ${card.id}: ${card.title}`)
+      );
+      break;
     }
-    setData({ columns: updatedColumns });
-    setEditingCardId(null);
   }
+
+  setData({ columns: updatedColumns });
+  setEditingCardId(null);
+}
+
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
@@ -80,7 +96,7 @@ export default function Board() {
             onAddCard={() => handleAddCard(key)}
             editingCardId={editingCardId}
             setEditingCardId={setEditingCardId}
-            onEditEnd={(title) => handleEditEnd(editingCardId!, title)}
+            onEditEnd={(editingCardId, title) => handleEditEnd(editingCardId!, title)}
           />
         ))}
       </div>

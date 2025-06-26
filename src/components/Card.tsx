@@ -1,4 +1,3 @@
-// src/components/Card.tsx
 import React, { useEffect, useRef, useState } from "react";
 import { Draggable } from "@hello-pangea/dnd";
 import { autofillTask } from "../lib/llmClient";
@@ -13,37 +12,41 @@ export default function Card({
   card: { id: string; title: string };
   index: number;
   isEditing: boolean;
-  onEditEnd: (newTitle: string) => void;
+  onEditEnd: (cardId: string, newTitle: string) => void;
   setEditingCardId: (id: string | null) => void;
 }) {
   const [draft, setDraft] = useState(card.title || "");
+  const [autofillPending, setAutofillPending] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const shouldEdit = isEditing || !card.title;
 
+  // Focus on the input when edit mode activates
   useEffect(() => {
     if (shouldEdit && inputRef.current) {
       inputRef.current.focus();
     }
   }, [shouldEdit]);
 
+  // If we requested autofill before entering edit mode, now trigger it
   useEffect(() => {
-    console.log("🔄 Card mounted:", card.title, "shouldEdit:", shouldEdit);
-  }, []);
+    if (shouldEdit && autofillPending) {
+      setAutofillPending(false);
+      handleAutofill();
+    }
+  }, [shouldEdit, autofillPending]);
 
   async function handleAutofill() {
     console.log("🧠 Autofill button clicked");
-    const suggestion = await autofillTask(`The user entered this text: "${draft}". Suggest three short, clear bullet points for this project. Keep each point concise.`);
+    const prompt = `The user entered this text: "${draft || "Untitled Task"}". Suggest three short, clear bullet points for this task. Keep each point concise.`;
+    const suggestion = await autofillTask(prompt);
     console.log("🧠 GPT returned:", suggestion);
     setDraft(suggestion);
-    onEditEnd(suggestion);
+    console.log("💾 Calling onEditEnd with:", suggestion);
+    onEditEnd(card.id, suggestion);
   }
 
   function handleBlur() {
-    if (draft.trim()) {
-      onEditEnd(draft.trim());
-    } else {
-      onEditEnd("Untitled Task");
-    }
+    onEditEnd(card.id, draft.trim() || "Untitled Task");
     setEditingCardId(null);
   }
 
@@ -87,9 +90,7 @@ export default function Card({
               <button
                 onClick={() => {
                   setEditingCardId(card.id);
-                  setTimeout(() => {
-                    handleAutofill();
-                  }, 0);
+                  setAutofillPending(true); // 🔁 Trigger GPT once editable
                 }}
                 className="text-xs text-blue-500 underline self-start"
               >

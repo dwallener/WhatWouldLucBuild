@@ -23,7 +23,7 @@ export default function Column({
   onAddCard: () => void;
   editingCardId: string | null;
   setEditingCardId: (id: string | null) => void;
-  onEditEnd: (newTitle: string) => void;
+  onEditEnd: (cardId: string, newTitle: string) => void; // ✅ takes 2 params
 }) {
   return (
     <div className="bg-white rounded-lg p-4 w-80 shadow">
@@ -42,7 +42,7 @@ export default function Column({
               index={index}
               isEditing={editingCardId === card.id || !card.title}
               setEditingCardId={setEditingCardId}
-              onEditEnd={(newTitle) => onEditEnd(card.id, newTitle)}  // 👈 fix here
+              onEditEnd={onEditEnd}  // 👈 fix here
             />
             ))}
             {provided.placeholder}
